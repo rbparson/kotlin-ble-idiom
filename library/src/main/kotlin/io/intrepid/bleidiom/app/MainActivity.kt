@@ -13,7 +13,6 @@ import android.widget.TextView
 import com.polidea.rxandroidble.RxBleClient
 import com.polidea.rxandroidble.internal.RxBleLog
 import io.intrepid.bleidiom.BleScanner
-import io.intrepid.bleidiom.R
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
