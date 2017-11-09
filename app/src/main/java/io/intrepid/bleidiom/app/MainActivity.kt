@@ -3,15 +3,14 @@
  */
 package io.intrepid.bleidiom.app
 
+//import com.polidea.rxandroidble.RxBleClient
+//import com.polidea.rxandroidble.internal.RxBleLog
 import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.util.Log
 import android.widget.TextView
-import com.polidea.rxandroidble.RxBleClient
-import com.polidea.rxandroidble.internal.RxBleLog
 import io.intrepid.bleidiom.BleScanner
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -22,8 +21,8 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     companion object {
         init {
-            RxBleLog.setLogLevel(RxBleLog.VERBOSE)
-            RxBleLog.setLogger { level, tag, msg -> Log.println(level, tag, msg) }
+//            RxBleLog.setLogLevel(RxBleLog.VERBOSE)
+//            RxBleLog.setLogger { level, tag, msg -> Log.println(level, tag, msg) }
 
             // Upon loading of this MainActivity class, define and register the BatterijService.
             defineBleServices()
@@ -132,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                 .onErrorResumeNext { _: Throwable -> getPercentageObservable(scanner, connect(scanner)) }
     }
 
-    private fun createScanner(context: Context) = BleScanner(RxBleClient.create(context))
+    private fun createScanner(context: Context) = BleScanner(context)
 
     private fun connect(scanner: BleScanner): Observable<BatterijService> {
         disconnect()
