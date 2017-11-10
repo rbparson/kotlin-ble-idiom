@@ -1,6 +1,9 @@
 package io.intrepid.bleidiom
 
+import com.github.salomonbrys.kodein.instance
+import com.github.salomonbrys.kodein.with
 import com.polidea.rxandroidble.mockrxandroidble.RxBleClientMock
+import com.polidea.rxandroidble.mockrxandroidble.RxBleDeviceMock
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction
@@ -61,17 +64,28 @@ internal class TestService2 : BleService<TestService2>()
 )
 class BleEndToEndTests : BleMockClientBaseTest() {
     companion object {
+        const val MAC_ADDRESS1 = "00:11:22:33:44:55"
         const val INITIAL_NUMBER_VAl = 1
         val INITIAL_BYTES_VAL = ByteArray(5, { index -> index.toByte() })
 
         @BeforeClass
         @JvmStatic
         fun load() {
+            BleTestModules.load {
+                listOf(buildDeviceService(TestService::class, MAC_ADDRESS1) {
+                    when {
+                        this == TestService::number -> BleEndToEndTests.INITIAL_NUMBER_VAl
+                        this == TestService::bytes -> BleEndToEndTests.INITIAL_BYTES_VAL
+                        else -> name
+                    }
+                }.build() as RxBleDeviceMock)
+            }
         }
 
         @AfterClass
         @JvmStatic
         fun unload() {
+            BleTestModules.unload()
         }
     }
 
@@ -83,13 +97,7 @@ class BleEndToEndTests : BleMockClientBaseTest() {
 
         TestService.define()
 
-        serverDevice = buildDeviceService(TestService::class) {
-            when {
-                this == TestService::number -> INITIAL_NUMBER_VAl
-                this == TestService::bytes -> INITIAL_BYTES_VAL
-                else -> name
-            }
-        }.build() as ServerDevice
+        serverDevice = BleTestModules.kodein.with(MAC_ADDRESS1).instance()
     }
 
     @After

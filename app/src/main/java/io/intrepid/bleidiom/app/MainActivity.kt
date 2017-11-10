@@ -3,14 +3,12 @@
  */
 package io.intrepid.bleidiom.app
 
-//import com.polidea.rxandroidble.RxBleClient
-//import com.polidea.rxandroidble.internal.RxBleLog
-import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.widget.TextView
+import com.github.salomonbrys.kodein.instance
 import io.intrepid.bleidiom.BleScanner
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -29,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var scanner: BleScanner
+    private val scanner: BleScanner get() = DemoAppModules.instance()
     private var batteryService: BatterijService? = null
     private var readBatterySub: Disposable? = null
     private var connectedServiceSub: Disposable? = null
@@ -90,8 +88,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         textView = findViewById(android.R.id.text1) as TextView
-
-        scanner = createScanner(this)
     }
 
     override fun onResume() {
@@ -130,8 +126,6 @@ class MainActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext { _: Throwable -> getPercentageObservable(scanner, connect(scanner)) }
     }
-
-    private fun createScanner(context: Context) = BleScanner(context)
 
     private fun connect(scanner: BleScanner): Observable<BatterijService> {
         disconnect()

@@ -38,16 +38,67 @@ import kotlin.reflect.jvm.isAccessible
  */
 open class BleMockClientBaseTest : BleBaseTest() {
     companion object {
-        var macAddress: String? = null
+        internal var macAddress: String? = null
 
-        val newMacAddress
-            get() = IntArray(6, { RANDOM.nextInt(256) })
-                    .fold("") { mac, byte ->
-                        val byteStr = byte.toString(16).padStart(2, '0')
-                        if (mac.isEmpty()) byteStr else "$mac:$byteStr"
+        internal fun <T : BleService<T>> buildDeviceService(
+                serviceClass: KClass<T>,
+                macAddress: String,
+                getInitialValue: KProperty1<T, BleCharValue<Any>>.() -> Any? = { null }
+        ): RxBleClientMock.DeviceBuilder {
+            val service: T = serviceClass.primaryConstructor!!.call()
+            BleMockClientBaseTest.macAddress = macAddress
+
+            var charListBuilder = RxBleClientMock.CharacteristicsBuilder()
+            var deviceBuilder = RxBleClientMock.DeviceBuilder()
+
+            serviceClass.memberProperties.forEach { prop ->
+                if (prop.returnType.classifier == BleCharValue::class) {
+                    @Suppress("UNCHECKED_CAST")
+                    val property = (prop as KProperty1<T, BleCharValue<Any>>)
+
+                    property.isAccessible = true
+
+                    val delegate = property.getDelegate(service)
+                    if (delegate is BleCharValueDelegate<*>) {
+                        @Suppress("UNCHECKED_CAST")
+                        val castDelegate: BleCharValueDelegate<Any> = delegate as BleCharValueDelegate<Any>
+
+                        val charUUID = castDelegate.charUUID(service, property)
+                        if (charUUID != null) {
+                            val uuid = UUID.fromString(fixCharUUID(charUUID))
+
+                            charListBuilder = addCharacteristic(macAddress, uuid, property, charListBuilder)
+
+                            val characteristic = TestableBluetoothGattCharacteristic[macAddress][uuid]
+                            if (characteristic != null) {
+                                characteristic.setInitialCharValue(property.getInitialValue(), castDelegate)
+
+                                deviceBuilder = deviceBuilder
+                                        .notificationSource(uuid, characteristic.serverNotificationObservable.toRx1Observable())
+                            }
+                        }
                     }
+                }
+            }
 
-        private val RANDOM = Random(System.currentTimeMillis())
+            return deviceBuilder
+                    .deviceMacAddress(BleMockClientBaseTest.macAddress!!)
+                    .addService(UUID.fromString(fixSvcUUID(service.dsl.uuid)), charListBuilder.build())
+                    .rssi(0)
+                    .scanRecord(ByteArray(0))
+        }
+
+        private fun <T : BleService<T>> addCharacteristic(
+                macAddress: String,
+                uuid: UUID, property: KProperty1<T, BleCharValue<Any>>,
+                charListBuilder: RxBleClientMock.CharacteristicsBuilder): RxBleClientMock.CharacteristicsBuilder {
+            var builder = charListBuilder
+
+            builder = builder.addCharacteristic(uuid, ByteArray(0), listOf())
+            TestableBluetoothGattCharacteristic[macAddress].tie(uuid, property)
+
+            return builder
+        }
     }
 
     override fun setup() {
@@ -81,65 +132,6 @@ open class BleMockClientBaseTest : BleBaseTest() {
         TestableBluetoothGattCharacteristic.tearDown()
         BleService.clearConfigurations()
         macAddress = null
-    }
-
-    internal fun <T : BleService<T>> buildDeviceService(
-            serviceClass: KClass<T>,
-            getInitialValue: KProperty1<T, BleCharValue<Any>>.() -> Any? = { null }
-    ): RxBleClientMock.DeviceBuilder {
-        val service: T = serviceClass.primaryConstructor!!.call()
-        macAddress = newMacAddress
-
-        var charListBuilder = RxBleClientMock.CharacteristicsBuilder()
-        var deviceBuilder = RxBleClientMock.DeviceBuilder()
-
-        serviceClass.memberProperties.forEach { prop ->
-            if (prop.returnType.classifier == BleCharValue::class) {
-                @Suppress("UNCHECKED_CAST")
-                val property = (prop as KProperty1<T, BleCharValue<Any>>)
-
-                property.isAccessible = true
-
-                val delegate = property.getDelegate(service)
-                if (delegate is BleCharValueDelegate<*>) {
-                    @Suppress("UNCHECKED_CAST")
-                    val castDelegate: BleCharValueDelegate<Any> = delegate as BleCharValueDelegate<Any>
-
-                    val charUUID = castDelegate.charUUID(service, property)
-                    if (charUUID != null) {
-                        val uuid = UUID.fromString(fixCharUUID(charUUID))
-
-                        charListBuilder = addCharacteristic(macAddress!!, uuid, property, charListBuilder)
-
-                        val characteristic = TestableBluetoothGattCharacteristic[macAddress!!][uuid]
-                        if (characteristic != null) {
-                            characteristic.setInitialCharValue(property.getInitialValue(), castDelegate)
-
-                            deviceBuilder = deviceBuilder
-                                    .notificationSource(uuid, characteristic.serverNotificationObservable.toRx1Observable())
-                        }
-                    }
-                }
-            }
-        }
-
-        return deviceBuilder
-                .deviceMacAddress(macAddress!!)
-                .addService(UUID.fromString(fixSvcUUID(service.dsl.uuid)), charListBuilder.build())
-                .rssi(0)
-                .scanRecord(ByteArray(0))
-    }
-
-    private fun <T : BleService<T>> addCharacteristic(
-            macAddress: String,
-            uuid: UUID, property: KProperty1<T, BleCharValue<Any>>,
-            charListBuilder: RxBleClientMock.CharacteristicsBuilder): RxBleClientMock.CharacteristicsBuilder {
-        var builder = charListBuilder
-
-        builder = builder.addCharacteristic(uuid, ByteArray(0), listOf())
-        TestableBluetoothGattCharacteristic[macAddress].tie(uuid, property)
-
-        return builder
     }
 }
 

@@ -3,7 +3,6 @@
  */
 package io.intrepid.bleidiom
 
-import android.content.Context
 import com.polidea.rxandroidble.RxBleClient
 import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.scan.ScanResult
@@ -27,13 +26,7 @@ open class ServiceDeviceFactory {
  * Scans for BLE devices that implement BLE Services that were
  * registered and configured by the [configureBleService].
  */
-class BleScanner(context: Context) : ServiceDeviceFactory() {
-    private val bleClient: RxBleClient
-
-    init {
-        bleClient = RxBleClient.create(context)
-    }
-
+class BleScanner(private val bleClient: RxBleClient) : ServiceDeviceFactory() {
     /**
      * Starts scanning of BLE devices that implement the given [BleService].
      *
