@@ -26,7 +26,7 @@ internal class BleTestModules {
             // Return a RxBleClientMock instead.
             bind<RxBleClient>(overrides = true) with provider {
                 RxBleClientMock.Builder()
-                        .setDeviceDiscoveryObservable(rx.Observable.from(devFactory()))
+                        .setDeviceDiscoveryObservable(rx.Observable.from(testDevices))
                         .build()
             }
 
@@ -36,12 +36,12 @@ internal class BleTestModules {
             }
         }
 
-        private var devFactory: () -> Iterable<RxBleDeviceMock> = { listOf() }
+        internal var testDevices: Iterable<RxBleDeviceMock> = listOf()
 
-        internal fun load(factory: () -> Iterable<RxBleDeviceMock>) {
+        internal fun load(factory: BleTestModules.Companion.() -> Unit) {
             testKodein.addImport(RxAndroidBleModule)
             testKodein.addImport(RxAndroidBleModuleOverride, allowOverride = true)
-            devFactory = factory
+            this.factory()
         }
 
         internal fun unload() {

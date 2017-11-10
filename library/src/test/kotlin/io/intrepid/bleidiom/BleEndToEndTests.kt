@@ -11,7 +11,9 @@ import io.reactivex.functions.Function3
 import io.reactivex.observers.TestObserver
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
-import org.junit.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -21,7 +23,7 @@ import kotlin.test.fail
 
 internal class TestService : BleService<TestService>() {
     companion object {
-        fun define() {
+        fun addConfiguration() {
             BleService<TestService> {
                 configure {
                     uuid = "181C"
@@ -68,25 +70,15 @@ class BleEndToEndTests : BleMockClientBaseTest() {
         const val INITIAL_NUMBER_VAl = 1
         val INITIAL_BYTES_VAL = ByteArray(5, { index -> index.toByte() })
 
-        @BeforeClass
-        @JvmStatic
-        fun load() {
-            BleTestModules.load {
-                listOf(buildDeviceService(TestService::class, MAC_ADDRESS1) {
-                    when {
-                        this == TestService::number -> BleEndToEndTests.INITIAL_NUMBER_VAl
-                        this == TestService::bytes -> BleEndToEndTests.INITIAL_BYTES_VAL
-                        else -> name
-                    }
-                }.build() as RxBleDeviceMock)
-            }
-        }
-
-        @AfterClass
-        @JvmStatic
-        fun unload() {
-            BleTestModules.unload()
-        }
+//        @BeforeClass
+//        @JvmStatic
+//        fun load() {
+//        }
+//
+//        @AfterClass
+//        @JvmStatic
+//        fun unload() {
+//        }
     }
 
     private lateinit var serverDevice: ServerDevice
@@ -95,7 +87,17 @@ class BleEndToEndTests : BleMockClientBaseTest() {
     override fun setup() {
         super.setup()
 
-        TestService.define()
+        TestService.addConfiguration()
+
+        BleTestModules.load {
+            testDevices = listOf(buildDeviceService(TestService::class, MAC_ADDRESS1) {
+                when {
+                    this == TestService::number -> BleEndToEndTests.INITIAL_NUMBER_VAl
+                    this == TestService::bytes -> BleEndToEndTests.INITIAL_BYTES_VAL
+                    else -> name
+                }
+            }.build() as RxBleDeviceMock)
+        }
 
         serverDevice = BleTestModules.kodein.with(MAC_ADDRESS1).instance()
     }
@@ -103,6 +105,8 @@ class BleEndToEndTests : BleMockClientBaseTest() {
     @After
     override fun tearDown() {
         super.tearDown()
+
+        BleTestModules.unload()
     }
 
     @Test
