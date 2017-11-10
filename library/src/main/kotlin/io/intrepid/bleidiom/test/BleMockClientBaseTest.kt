@@ -1,4 +1,4 @@
-package io.intrepid.bleidiom
+package io.intrepid.bleidiom.test
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
@@ -8,6 +8,7 @@ import com.nhaarman.mockito_kotlin.doAnswer
 import com.nhaarman.mockito_kotlin.mock
 import com.polidea.rxandroidble.mockrxandroidble.RxBleClientMock
 import com.polidea.rxandroidble.mockrxandroidble.RxBleDeviceMock
+import io.intrepid.bleidiom.*
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.processors.PublishProcessor
@@ -40,7 +41,7 @@ open class BleMockClientBaseTest : BleBaseTest() {
     companion object {
         internal var macAddress: String? = null
 
-        internal fun <T : BleService<T>> buildDeviceService(
+        fun <T : BleService<T>> buildDeviceService(
                 serviceClass: KClass<T>,
                 macAddress: String,
                 getInitialValue: KProperty1<T, BleCharValue<Any>>.() -> Any? = { null }
@@ -135,7 +136,7 @@ open class BleMockClientBaseTest : BleBaseTest() {
     }
 }
 
-internal typealias ServerDevice = RxBleDeviceMock
+typealias ServerDevice = RxBleDeviceMock
 
 /**
  *  Returns the first advertised service UUID.

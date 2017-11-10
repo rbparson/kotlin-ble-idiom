@@ -49,9 +49,12 @@ def kodeinVersion = "4.1.0"
 def kotlinTestVersion = kotlin_version
 def kotlinMockitoVersion = "1.5.0"
 
+def bleDslVersion = "e95298d"
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':library')
+    //implementation "com.github.IntrepidPursuits:kotlin-ble-idiom:$bleDslVersion"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -70,7 +73,10 @@ dependencies {
 
     testImplementation "junit:junit:4.12"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinTestVersion"
-    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$kotlinMockitoVersion"
     testImplementation "org.powermock:powermock-module-junit4:1.7.3"
+
+    testImplementation "com.github.salomonbrys.kodein:kodein-conf:$kodeinVersion"
+    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$kotlinMockitoVersion"
     testImplementation "org.powermock:powermock-api-mockito2:1.7.3"
+    testImplementation "com.polidea.rxandroidble:mockclient:$rxBleVersion"
 }

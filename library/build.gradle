@@ -63,6 +63,7 @@ def kodeinVersion = "4.1.0"
 
 def kotlinTestVersion = kotlin_version
 def kotlinMockitoVersion = "1.5.0"
+def powerMockVersion = "1.7.3"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -86,11 +87,23 @@ dependencies {
     implementation "com.github.salomonbrys.kodein:kodein:$kodeinVersion"
     implementation "com.github.salomonbrys.kodein:kodein-android:$kodeinVersion"
 
-    testImplementation "com.github.salomonbrys.kodein:kodein-conf:$kodeinVersion"
+    // The classes in 'io.intrepid.bleidiom.test' are never called in
+    // the code of an app, but still should compile.
+    // Tests in an app that want to use these classes in 'io.intrepid.bleidiom.test'
+    // should use 'testImplementation' on the list of libraries below.
+    provided "com.github.salomonbrys.kodein:kodein-conf:$kodeinVersion"
+    provided "com.nhaarman:mockito-kotlin-kt1.1:$kotlinMockitoVersion"
+    provided "org.powermock:powermock-api-mockito2:$powerMockVersion"
+    provided "com.polidea.rxandroidble:mockclient:$rxBleVersion"
+
     testImplementation "junit:junit:4.12"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinTestVersion"
+    testImplementation "org.powermock:powermock-module-junit4:$powerMockVersion"
+
+    // Here we must implement the provided libraries, since the tests will
+    // actually run tests based on classes in 'io.intrepid.bleidiom.test'
+    testImplementation "com.github.salomonbrys.kodein:kodein-conf:$kodeinVersion"
     testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$kotlinMockitoVersion"
-    testImplementation "org.powermock:powermock-module-junit4:1.7.3"
-    testImplementation "org.powermock:powermock-api-mockito2:1.7.3"
+    testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
     testImplementation "com.polidea.rxandroidble:mockclient:$rxBleVersion"
 }

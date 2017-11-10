@@ -4,6 +4,7 @@ import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.with
 import com.polidea.rxandroidble.mockrxandroidble.RxBleClientMock
 import com.polidea.rxandroidble.mockrxandroidble.RxBleDeviceMock
+import io.intrepid.bleidiom.test.*
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction

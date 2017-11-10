@@ -1,4 +1,4 @@
-package io.intrepid.bleidiom
+package io.intrepid.bleidiom.test
 
 import io.reactivex.android.plugins.RxAndroidPlugins
 import io.reactivex.plugins.RxJavaPlugins
@@ -7,8 +7,8 @@ import io.reactivex.schedulers.TestScheduler
 /**
  * Base class of all test-suites for this library/sdk
  */
-open class BleBaseTest {
-    internal lateinit var testScheduler: TestScheduler
+abstract class BleBaseTest {
+    protected lateinit var testScheduler: TestScheduler
 
     open fun setup() {
         testScheduler = TestScheduler()

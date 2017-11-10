@@ -1,4 +1,4 @@
-package io.intrepid.bleidiom
+package io.intrepid.bleidiom.test
 
 import com.github.salomonbrys.kodein.*
 import com.github.salomonbrys.kodein.conf.ConfigurableKodein
@@ -15,11 +15,23 @@ import io.intrepid.bleidiom.module.RxAndroidBleModule
 /**
  * Modules for BLE related D.I.
  */
-internal class BleTestModules {
+class BleTestModules {
     companion object {
-        internal val kodein get() = testKodein
+        val kodein get() = testKodein
+
+        var testDevices: Iterable<RxBleDeviceMock> = listOf()
 
         private val testKodein: ConfigurableKodein = ConfigurableKodein(true)
+
+        fun load(factory: Companion.() -> Unit) {
+            testKodein.addImport(RxAndroidBleModule)
+            testKodein.addImport(RxAndroidBleModuleOverride, allowOverride = true)
+            this.factory()
+        }
+
+        fun unload() {
+            testKodein.clear()
+        }
 
         private val RxAndroidBleModuleOverride = Kodein.Module {
             // Override: Make a provider instead of a singleton.
@@ -34,18 +46,6 @@ internal class BleTestModules {
             bind<ServerDevice>() with factory { macAddress: String ->
                 with(macAddress).instance<RxBleDevice>() as ServerDevice
             }
-        }
-
-        internal var testDevices: Iterable<RxBleDeviceMock> = listOf()
-
-        internal fun load(factory: BleTestModules.Companion.() -> Unit) {
-            testKodein.addImport(RxAndroidBleModule)
-            testKodein.addImport(RxAndroidBleModuleOverride, allowOverride = true)
-            this.factory()
-        }
-
-        internal fun unload() {
-            testKodein.clear()
         }
     }
 }
