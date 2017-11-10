@@ -28,6 +28,10 @@ allprojects {
         maven {
             url "http://dl.bintray.com/kotlin/kotlin-eap-1.2"
         }
+        maven {
+            url "https://jitpack.io"
+            credentials { username '9fe2eef00eae941b5bfdc7c6891598cb60e9d1ac' }
+        }
     }
 }
 

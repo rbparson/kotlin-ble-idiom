@@ -3,7 +3,6 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'kotlin-android'
 
 group = 'com.github.intrepidpursuits'
-version = '0.1.0'
 
 android {
     compileSdkVersion 25
